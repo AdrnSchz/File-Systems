@@ -27,6 +27,10 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    int block_size = 0;
+    fseek(fs, 1024 + 24, SEEK_SET);
+    fread(&block_size, sizeof(int), 1, fs);
+
     // Read 1024 bytes = 1 block
     // ================================================================
     // INODE INFO  
@@ -99,6 +103,8 @@ int main(int argc, char *argv[]) {
     int last_written = 0;
     fseek(fs, 1024 + 48, SEEK_SET);
     fread(&last_written, sizeof(int), 1, fs);
+
+    printf("\n\nBlock size = %d\n\n", block_size);
 
     printf("Inode size = %d\n", inode_size);
     printf("Number of inodes = %d\n", num_inodes);
