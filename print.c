@@ -50,3 +50,16 @@ void printExt2Info(Ext2_Data ext2) {
     printf("Last written = %s\n", buffer);
     free(buffer);
 }
+
+void printFat16Info(Fat16_Data fat16) {
+    printf("\n\nFAT type = FAT16\n\n");
+
+    printf("System name: %s\n", fat16.system_name);
+    printf("Sector size: %d\n", fat16.bytes_per_sector);
+    printf("Sectors per cluster: %d\n", fat16.sectors_per_cluster);
+    printf("Reserved sectors: %d\n", fat16.reserved_sectors);
+    printf("# of FATs: %d\n", fat16.num_fats);
+    printf("Max root entries: %d\n", fat16.root_entries);
+    printf("Sector per FAT: %d\n", fat16.sectors_per_fat);
+    printf("Label: %s\n", fat16.volume_name);
+}
