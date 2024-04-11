@@ -11,13 +11,13 @@ int main(int argc, char *argv[]) {
     
     char* path = argv[2];
 
-    switch(fat16_read_data(path, &fat16)) {
+    switch(ext2_read_data(path, &ext2)) {
         case 1:
             OPEN_FILE_ERROR(path);
     }
-    
-    
-    printFat16Info(fat16);
+
+    printf("\n------ Filesystem Information ------\n");
+    printExt2Info(ext2);
 
     return 0;
 }

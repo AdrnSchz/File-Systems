@@ -7,16 +7,15 @@
 #include <stdlib.h>
 
 typedef struct {
-    char system_name[9]; 
-    char volume_name[12]; 
-    uint16_t bytes_per_sector;
-    uint8_t sectors_per_cluster;
-    uint16_t reserved_sectors;
+    char system_name[8]; 
+    int sector_size;
+    int sectors_per_cluster;
+    int reserved_sectors;
     
-    uint8_t num_fats;
-    uint16_t root_entries;
-    uint16_t sectors_per_fat;
-    
+    int num_fats;
+    int root_entries;
+    int sectors_per_fat;
+    char label_name[11];
 } Fat16_Data;
 
 

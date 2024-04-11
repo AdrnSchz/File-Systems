@@ -17,12 +17,11 @@ int ext2_read_data(char* path, Ext2_Data* ext2) {
     int shift = 0;
     fseek(fs, EXT2_BLOCK_SIZE_OFFSET, SEEK_SET);
     fread(&shift, sizeof(int), 1, fs);
-    ext2->block.size = EXT2_BLOCK_SIZE_OFFSET << shift;
+    ext2->block.size = EXT2_SUPERBLOCK_SIZE << shift;
 
     // ================================================================
     // INODE INFO  
     // ================================================================
-
     fseek(fs, ext2->block.size + EXT2_INODE_SIZE_OFFSET, SEEK_SET);
     fread(&ext2->inode.size, sizeof(int), 1, fs);
 
