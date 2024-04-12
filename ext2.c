@@ -17,6 +17,7 @@ int ext2_read_data(char* path, Ext2_Data* ext2) {
     int type;
     lseek(fs, 56, SEEK_SET);
     read(fs, &type, 2);
+    fread(&type, sizeof(int), 1, fs);
     if (type == 0xEF53) {
         return -1;
     }

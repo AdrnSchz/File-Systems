@@ -23,7 +23,8 @@ char* unix_time_to_normal(time_t unix_time) {
 }
 
 void printExt2Info(Ext2_Data ext2) {
-     printf("\nFilesystem type = FAT16");
+    printf("\nFilesystem: EXT2\n\n");
+    printf("INODE INFO\n");
     printf("\n\nBlock size = %d\n\n", ext2.block.size);
 
     printf("Inode size = %d\n", ext2.inode.size);
