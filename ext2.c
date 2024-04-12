@@ -9,10 +9,15 @@ int ext2_read_data(char* path, Ext2_Data* ext2) {
         return 1;
     }
 
+
+
+    // ================================================================
+    // TODO: CHECKEAR SI EL FILEES EXT2
+    // ================================================================
     int type;
-    fseek(fs, 56, SEEK_SET);
-    fread(&type, sizeof(int), 1, fs);
-    if (type == 0xEF53) {
+    fseek(fs, 1024 + 56, SEEK_SET);
+    fread(&type, sizeof(char), 2, fs);
+    if (type != 0xEF53) {
         return -1;
     }
 
@@ -63,17 +68,21 @@ int ext2_read_data(char* path, Ext2_Data* ext2) {
     // ================================================================
     // INFO VOLUME
     // ================================================================
+    ext2->last_check = 0;
+    ext2->last_mounted = 0;
+    ext2->last_written = 0;
+
     fseek(fs, ext2->block.size + EXT2_VOLUME_NAME_OFFSET, SEEK_SET);
     fread(&ext2->volume_name, sizeof(char) * 16, 1, fs);
     
     fseek(fs, ext2->block.size + EXT2_LAST_CHECK_OFFSET, SEEK_SET);
-    fread(&ext2->last_check, sizeof(int), 1, fs);
+    fread(&ext2->last_check, sizeof(char), 4, fs);
 
     fseek(fs, ext2->block.size + EXT2_LAST_MOUNTED_OFFSET, SEEK_SET);
-    fread(&ext2->last_mounted, sizeof(int), 1, fs);
+    fread(&ext2->last_mounted, sizeof(char), 4, fs);
 
     fseek(fs, ext2->block.size + EXT2_LAST_WRITTEN_OFFSET, SEEK_SET);
-    fread(&ext2->last_written, sizeof(int), 1, fs);
+    fread(&ext2->last_written, sizeof(char), 4, fs);
 
     fclose(fs);
 
