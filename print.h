@@ -3,6 +3,7 @@
 
 #include "ext2.h"
 #include "fat16.h"
+#include <string.h>
 
 #define USAGE_ERROR(x) printf("Usage: %s --info <file system>\n", x)
 #define OPEN_FILE_ERROR(x) printf("Error: Could not open file %s\n", x)

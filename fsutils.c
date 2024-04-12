@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
     
     char* path = argv[2];
 
-   int result = ext2_read_data(path, &ext2);
+    int result = ext2_read_data(path, &ext2);
 
     if (result == 1) {
        OPEN_FILE_ERROR(path);

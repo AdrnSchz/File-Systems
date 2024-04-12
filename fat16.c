@@ -10,7 +10,7 @@ int fat16_read_data(char* path, Fat16_Data* fat16) {
     char type[8];
     fseek(fs, 54, SEEK_SET);
     fread(&type, sizeof(char), 8, fs);
-    if (strncmp(type, "FAT16", 5) == 0) {
+    if (strncmp(type, "FAT16", 5) != 0) {
         return -1;
     }
 
