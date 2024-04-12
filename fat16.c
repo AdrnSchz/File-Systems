@@ -7,6 +7,13 @@ int fat16_read_data(char* path, Fat16_Data* fat16) {
         return 1;
     }
 
+    char type[8];
+    lseek(fs, 54, SEEK_SET);
+    read(fs, type, 8);
+    if (strncmp(type, "FAT16", 5) == 0) {
+        return -1;
+    }
+
     fat16->sector_size = 0;
     fat16->sectors_per_cluster = 0;
     fat16->reserved_sectors = 0;

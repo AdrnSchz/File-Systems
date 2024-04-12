@@ -8,11 +8,18 @@ int ext2_read_data(char* path, Ext2_Data* ext2) {
         perror("Failed to open file system image");
         return 1;
     }
+
+
     
     // ================================================================
     // TODO: CHECKEAR SI EL FILEES EXT2
     // ================================================================
-
+    int type;
+    lseek(fs, 56, SEEK_SET);
+    read(fs, &type, 2);
+    if (type == 0xEF53) {
+        return -1;
+    }
 
     int shift = 0;
     fseek(fs, EXT2_BLOCK_SIZE_OFFSET, SEEK_SET);
@@ -75,5 +82,5 @@ int ext2_read_data(char* path, Ext2_Data* ext2) {
 
     fclose(fs);
 
-    return 0;
+    return 2;
 }
