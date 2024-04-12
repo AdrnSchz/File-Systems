@@ -2,22 +2,14 @@
 #include <string.h>
 
 char* unix_time_to_normal(time_t unix_time) {
-     printf("\n2\n");
     struct tm *local_time;
     char* buffer;
 
-    buffer = malloc(80);
-    memcpy(buffer, "\0", 80);
-
-     printf("\n2.1\n");
-    // Convert Unix time to local time
+    buffer = malloc(21);
     local_time = localtime(&unix_time);
-     printf("\n2.2\n");
-    // Format the local time
-    strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", local_time);
 
-
-    printf("\n2.3\n");
+    strftime(buffer, 20, "%Y-%m-%d %H:%M:%S", local_time);
+    buffer[20] = '\0';
 
     return buffer;
 }
