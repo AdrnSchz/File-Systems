@@ -25,44 +25,40 @@ char* unix_time_to_normal(time_t unix_time) {
 void printExt2Info(Ext2_Data ext2) {
     printf("\nFilesystem: EXT2\n\n");
     printf("INODE INFO\n");
-    printf("\n\nBlock size = %d\n\n", ext2.block.size);
-
-    printf("Inode size = %d\n", ext2.inode.size);
-    printf("Number of inodes = %d\n", ext2.inode.total);
-    printf("First inode = %d\n", ext2.inode.first);
-    printf("Inodes per group = %d\n", ext2.inode.groups);
-    printf("Free inodes = %d\n", ext2.inode.free);
-
-    printf("\n");
+    printf("\rSize = %d\n", ext2.inode.size);
     
-    printf("Reserved blocks = %d\n", ext2.block.reserved);
-    printf("Free blocks = %d\n", ext2.block.free);
-    printf("Total blocks = %d\n", ext2.block.total);
-    printf("First block = %d\n", ext2.block.first);
-    printf("Groups block = %d\n", ext2.block.groups);
-    printf("Groups flags = %d\n", ext2.block.flags);
+    printf("\rNum Inodes: %d\n", ext2.inode.total);
+    printf("\rFirst Inode: %d\n", ext2.inode.first);
+    printf("\rInodes Group = %d\n", ext2.inode.groups);
+    printf("\rFree Inodes = %d\n", ext2.inode.free);
 
-    printf("\n");
+    printf("\nINFO BLOCK\n");
+    printf("\rBlock size: %d\n", ext2.block.size);
+    printf("\rReserved blocks: %d\n", ext2.block.reserved);
+    printf("\rFree blocks: %d\n", ext2.block.free);
+    printf("\rTotal blocks: %d\n", ext2.block.total);
+    printf("\rFirst block: %d\n", ext2.block.first);
+    printf("\rGroups block: %d\n", ext2.block.groups);
+    printf("\rGroups flags: %d\n", ext2.block.flags);
 
-    printf("Volume name = %s\n", ext2.volume_name);
+    printf("\nINFO VOLUME\n");
+    printf("\rVolume name: %s\n", ext2.volume_name);
     
     char* buffer = unix_time_to_normal(ext2.last_check);
-    printf("Last checked = %s\n", buffer);
+    printf("\rLast checked: %s\n", buffer);
     free(buffer);
-    printf("\n1\n");
 
     buffer = unix_time_to_normal(ext2.last_mounted);
-    printf("Last mounted = %s\n", buffer);
+    printf("\rLast mounted: %s\n", buffer);
     free(buffer);
-    printf("\n3\n");
 
     buffer = unix_time_to_normal(ext2.last_written);
-    printf("Last written = %s\n", buffer);
+    printf("\rLast written: %s\n", buffer);
     free(buffer);
 }
 
 void printFat16Info(Fat16_Data fat16) {
-    printf("\nFilesystem type = FAT16");
+    printf("\nFilesystem: FAT16");
 
     printf("System name: %s\n", fat16.system_name);
     printf("Sector size: %d\n", fat16.sector_size);
