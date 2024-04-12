@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct {
     char system_name[8]; 
