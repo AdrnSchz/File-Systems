@@ -1,39 +1,57 @@
 #include "print.h"
 
-int main(int argc, char *argv[]) {
-    Ext2_Data ext2;
-    Fat16_Data fat16;
+void checkFileSystem(char* path, int* result, Ext2_Data* ext2, Fat16_Data* fat16);
+void printInfo(char* path);
+void printTree(char* path);
 
+int main(int argc, char *argv[]) {
     if (argc != 3) {
         USAGE_ERROR(argv[0]);
         return 1;
     }
-    
+
     char* path = argv[2];
+    if (strcmp(argv[1], "--info") == 0) {    
+        printInfo(path);
+    } else if (strcmp(argv[1], "--tree") == 0) {    
+        printTree(path);
+    } else {
+        USAGE_ERROR(argv[0]);
+        return 1;
+    }
 
-    int result = ext2_read_data(path, &ext2);
+    return 0;
+}
 
-    if (result == 1) {
+void checkFileSystem(char* path, int* result, Ext2_Data* ext2, Fat16_Data* fat16) {
+    *result = ext2_read_data(path, ext2);
+
+    if (*result == 1) {
        OPEN_FILE_ERROR(path);
-       return 1;
-    } else if (result == -1) {
-        NOT_EXT2_ERROR(path);
-        result = fat16_read_data(path, &fat16);
-        if (result == 1) {
+    } else if (*result == -1) {
+        *result = fat16_read_data(path, fat16);
+        if (*result == 1) {
             OPEN_FILE_ERROR(path);
-            return 1;
-        } else if (result == -1) {
-            printf("Error: File system: %s is not of type FAT16\n", path);
-            return 1;
         }
     }
+}
+
+void printInfo(char* path) {
+    Ext2_Data ext2;
+    Fat16_Data fat16;
+    int result;
+    checkFileSystem(path, &result, &ext2, &fat16);
 
     printf("\n------ Filesystem Information ------\n");
     if (result == 2) {
         printExt2Info(ext2);
-    } else {
+    } else if (result == 0) {
         printFat16Info(fat16);
+    } else {
+        FILE_SYSTEM_ERROR(path);
     }
+}
 
-    return 0;
+void printTree(char* path) {
+    printf("%s", path);
 }
