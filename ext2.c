@@ -88,3 +88,9 @@ int ext2_read_data(char* path, Ext2_Data* ext2) {
 
     return 2;
 }
+
+void ext2_print_tree(Ext2_Data ext2, char* path) {
+    printf("EXT2 Print Tree\n");
+    printf("Path: %s\n", path);
+    printf("Volume name: %s\n", ext2.volume_name);
+}

@@ -51,3 +51,10 @@ int fat16_read_data(char* path, Fat16_Data* fat16) {
     return 0;
 }
 
+void fat16_print_tree(Fat16_Data fat16, char* path) {
+    printf("FAT16 Print Tree\n");
+    printf("Path: %s\n", path);
+    printf("System name: %s\n", fat16.system_name);
+
+}
+

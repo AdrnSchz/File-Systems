@@ -53,5 +53,18 @@ void printInfo(char* path) {
 }
 
 void printTree(char* path) {
-    printf("%s", path);
+    Ext2_Data ext2;
+    Fat16_Data fat16;
+    int result;
+    checkFileSystem(path, &result, &ext2, &fat16);
+
+    if (result == 2) {
+        ext2_print_tree(ext2, path);
+    } else if (result == 0) {
+        fat16_print_tree(fat16, path);
+    } else {
+        FILE_SYSTEM_ERROR(path);
+    }
+    
+    
 }

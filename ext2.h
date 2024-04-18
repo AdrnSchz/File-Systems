@@ -55,5 +55,6 @@ typedef struct {
 } Ext2_Data;
 
 int ext2_read_data(char* path, Ext2_Data* ext2);
+void ext2_print_tree(Ext2_Data ext2, char* path);
 
 #endif
