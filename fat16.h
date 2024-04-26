@@ -7,6 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+#define FAT16_DIR_ENTRY_SIZE 32
+#define FAT16_NAME_SIZE 11
+#define FAT16_FIRST_CLUSTER_OFFSET 26
 typedef struct {
     char system_name[8]; 
     int sector_size;

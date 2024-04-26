@@ -6,8 +6,9 @@
 #include <time.h>
 #include <stdlib.h>
 
-#define EXT2_SUPERBLOCK_SIZE 1024
+#define EXT2_BOOT_BLOCK_OFFSET 1024
 
+#define EXT2_IDENTIFIER_OFFSET 56
 #define EXT2_INODE_SIZE_OFFSET 88
 #define EXT2_INODE_NUM_OFFSET 0
 #define EXT2_INODE_FIRST_OFFSET 84
@@ -54,7 +55,19 @@ typedef struct {
     Ext2_Inode inode;
 } Ext2_Data;
 
+typedef struct {
+    int inode;
+    int size;
+    char name[255];
+} Inode_Table;
+
+typedef struct {
+    int inode;
+    int size;
+    char name[];
+} Ext2_Directory;
+
 int ext2_read_data(char* path, Ext2_Data* ext2);
-void ext2_print_tree(Ext2_Data ext2, char* path);
+void ext2_print_tree(char* path);
 
 #endif
