@@ -6,6 +6,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 
 #define FAT16_DIR_ENTRY_SIZE 32

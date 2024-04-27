@@ -52,11 +52,17 @@ int fat16_read_data(char* path, Fat16_Data* fat16) {
 }
 
 void printFat16TreeEntry(char* name, int depth) {
-    printf("|");
-    for(int i = 0; i < depth; i++) {
-        printf("\t");
+    if (depth > 0) {
+        printf("|");
     }
-    printf("|-- %s\n", name);
+    for(int i = 0; i < depth; i++) {
+        printf("    ");
+    }
+
+    for (int i = 0; i < FAT16_NAME_SIZE + 1; i++) {
+        name[i] = tolower(name[i]);
+    }
+    printf("|__ %s\n", name);
 }
 
 int isDirectory(FILE* fd, unsigned int addr) {
@@ -66,18 +72,68 @@ int isDirectory(FILE* fd, unsigned int addr) {
 
     return (attribute == 0x10);
 }
+
+unsigned char* prepareName(unsigned char* name) {
+    unsigned char* new_name = malloc(FAT16_NAME_SIZE + 2);
+    int i,j = 0;
+    for (i = 0; i < 8 && name[i] != ' '; i++) {
+        new_name[j] = name[i];
+        j++;
+    }
+
+    if (name[8] != ' ') {
+        new_name[j] = '.';
+        j++;
+        for (i = 8; i < FAT16_NAME_SIZE && name[i] != ' '; i++) {
+            new_name[j] = name[i];
+            j++;
+        }
+    }
+    new_name[j] = '\0';
+    free(name);
+
+    return new_name;
+}
+
+int checkName(unsigned char* name) {
+    int illegal[16] = { 0x22, 0x2A, 0x2B, 0x2C, 0x2E, 0x2F, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x5B, 0x5C, 0x5D, 0x7C };
+    if (name[0] == 0x05 || name[0] == 0xE5) {
+        return 1;
+    }
+
+    for (int i = 0; i < FAT16_NAME_SIZE; i++) {
+        if (name[i] < 0x20) {
+            return 1;
+        }
+        else {
+            for (int j = 0; j < 16; j++) {
+                if (name[i] == illegal[j]) {
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
 void recursive_search(Fat16_Data fat16, FILE* fd, unsigned int addr, int depth) {
-    char file[FAT16_NAME_SIZE + 1];
+    unsigned char *file = malloc(FAT16_NAME_SIZE + 1);
     for (int i = 0; i < fat16.root_entries; i++) {
+        memset(file, 0, FAT16_NAME_SIZE + 1);
         fseek(fd, addr + (i * FAT16_DIR_ENTRY_SIZE), SEEK_SET);
-        fread(&file, sizeof(char), FAT16_NAME_SIZE, fd);
+        fread(file, sizeof(char), FAT16_NAME_SIZE, fd);
         file[FAT16_NAME_SIZE] = '\0';
         
-        if (file[0] == 0x00) return;
-        if (file[0] == 0x5 && file[1] == 0xE) continue;
-
+        if (file[0] == 0x00) {
+            free(file);
+            return;
+        }
+        if (checkName(file)) continue;
+        
+        file = prepareName(file);
         if (isDirectory(fd, addr + (i * FAT16_DIR_ENTRY_SIZE))) {
-            printFat16TreeEntry(file, depth);
+            if (strcmp((char*)file, ".") == 0 || strcmp((char*)file, "..") == 0) continue;
+            
+            printFat16TreeEntry((char*)file, depth);
             
             unsigned short cluster;
             fseek(fd, addr + (i * FAT16_DIR_ENTRY_SIZE) + FAT16_FIRST_CLUSTER_OFFSET, SEEK_SET);
@@ -88,9 +144,13 @@ void recursive_search(Fat16_Data fat16, FILE* fd, unsigned int addr, int depth) 
             recursive_search(fat16, fd, dir_addr, depth + 1);
         } 
         else {
-            printFat16TreeEntry(file, depth);
+            printFat16TreeEntry((char*)file, depth);
         }
+        
+
+        
     }
+    free(file);
 }
 void fat16_print_tree(Fat16_Data fat16, char* path) {
     FILE *fd = fopen(path, "rb");
