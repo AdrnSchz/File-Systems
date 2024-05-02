@@ -59,7 +59,7 @@ void printTree(char* path) {
     checkFileSystem(path, &result, &ext2, &fat16);
 
     if (result == 2) {
-        ext2_print_tree(path);
+        ext2_print_tree(ext2, path);
     } else if (result == 0) {
         fat16_print_tree(fat16, path);
     } else {

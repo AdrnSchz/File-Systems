@@ -115,7 +115,7 @@ int checkName(unsigned char* name) {
     }
     return 0;
 }
-void recursive_search(Fat16_Data fat16, FILE* fd, unsigned int addr, int depth) {
+void search(Fat16_Data fat16, FILE* fd, unsigned int addr, int depth) {
     unsigned char *file = malloc(FAT16_NAME_SIZE + 1);
     for (int i = 0; i < fat16.root_entries; i++) {
         memset(file, 0, FAT16_NAME_SIZE + 1);
@@ -141,14 +141,12 @@ void recursive_search(Fat16_Data fat16, FILE* fd, unsigned int addr, int depth) 
             unsigned int cluster_addr = (cluster - 2) * fat16.sectors_per_cluster * fat16.sector_size;
             unsigned int dir_addr = cluster_addr + (fat16.reserved_sectors * fat16.sector_size) + 
                 (fat16.num_fats * fat16.sectors_per_fat * fat16.sector_size) + (fat16.root_entries * FAT16_DIR_ENTRY_SIZE);
-            recursive_search(fat16, fd, dir_addr, depth + 1);
+            search(fat16, fd, dir_addr, depth + 1);
         } 
         else {
+            
             printFat16TreeEntry((char*)file, depth);
         }
-        
-
-        
     }
     free(file);
 }
@@ -162,7 +160,7 @@ void fat16_print_tree(Fat16_Data fat16, char* path) {
 
     unsigned int root_dir = fat16.reserved_sectors + (fat16.num_fats * fat16.sectors_per_fat);
     
-    recursive_search(fat16, fd, root_dir * fat16.sector_size, 0);
+    search(fat16, fd, root_dir * fat16.sector_size, 0);
 
     fclose(fd);
 }

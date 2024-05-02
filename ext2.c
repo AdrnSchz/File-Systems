@@ -87,24 +87,47 @@ int ext2_read_data(char* path, Ext2_Data* ext2) {
     return 2;
 }
 
-
-Inode_Table readInodeTable(Ext2_Data ext2, FILE* fd) {
+Inode_Table readInodeTable(Ext2_Data ext2, FILE* fd, int inode) {
     Inode_Table table;
     
-    fseek(fd, ext2.block.size + ext2.inode.first * ext2.inode.size, SEEK_SET);
-    fread(&table, sizeof(Inode_Table), 1, fd);
+    unsigned int inode_block;
+    fseek(fd, EXT2_BOOT_BLOCK_OFFSET + ext2.block.size + EXT2_FIRST_INODE_BLOCK_OFFSET , SEEK_SET);
+    fread(&inode_block, sizeof(int), 1, fd);
 
+    unsigned int block_group_num = (inode - 1) / ext2.inode.size;
+    unsigned int index_inode = (inode - 1) % ext2.inode.size;
+    unsigned int block_group_offset = ext2.block.groups * ext2.block.size * block_group_num;
+    
+    unsigned int inode_offset = index_inode * ext2.inode.size + inode_block * ext2.block.size + block_group_offset;
+
+    fseek(fd, inode_offset, SEEK_SET);
+    fread(&table, sizeof(Inode_Table), 1, fd);
 
     return table;
 }
 
-void ext2_print_tree(char* path) {
+void search(Ext2_Data ext2, FILE* fd, int inode, int depth) {
+    Inode_Table table = readInodeTable(ext2 , fd, inode);
+    unsigned int size = 0;
+
+    for (int i = 0; i < /*number of blocks*/ && size < table.size; i++) {
+        unsigned int pos_first_block = table.blocks[i] * ext2.block.size;
+
+        for (int j = 0; j < /*number of directory entries*/; j++) {
+            
+        }
+    }
+}
+
+void ext2_print_tree(Ext2_Data* ext2, char* path) {
     FILE* fd = fopen(path, "rb");
     if (fd == NULL) {
         printf("Failed to open file %s\n", path);
         return;
     }
     
-    //Inode_Table table = readInodeTable(ext2 , fd);
+    
+
+    search(ext2, fd, table, EXT2_ROOT_INODE, 0);
     fclose(fd);
 }
