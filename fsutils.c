@@ -5,21 +5,23 @@ void printInfo(char* path);
 void printTree(char* path);
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
+    if (argc < 3) {
         USAGE_ERROR(argv[0]);
         return 1;
     }
 
     char* path = argv[2];
-    if (strcmp(argv[1], "--info") == 0) {    
+    if (argc == 3 && strcmp(argv[1], "--info") == 0) {   
         printInfo(path);
-    } else if (strcmp(argv[1], "--tree") == 0) {    
+    } else if (argc == 3 && strcmp(argv[1], "--tree") == 0) {    
         printTree(path);
+    } else if (argc == 4 && strcmp(argv[1], "--cat") == 0) {
+        char* filename = argv[3];
+        catFile(path, filename);
     } else {
         USAGE_ERROR(argv[0]);
         return 1;
     }
-
     return 0;
 }
 
@@ -65,6 +67,20 @@ void printTree(char* path) {
     } else {
         FILE_SYSTEM_ERROR(path);
     }
-    
-    
+}
+
+void catFile(char *path, char* filename) {
+    Ext2_Data ext2;
+    Fat16_Data fat16;
+    int result;
+    checkFileSystem(path, &result, &ext2, &fat16);
+
+    if (result == 2) {
+        //ext2_cat_file(ext2, path, filename);
+        FILE_SYSTEM_ERROR(path);
+    } else if (result == 0) {
+        fat16_cat_file(fat16, path, filename);
+    } else {
+        FILE_SYSTEM_ERROR(path);
+    }
 }
