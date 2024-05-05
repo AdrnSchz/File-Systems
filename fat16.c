@@ -195,7 +195,7 @@ void searchAndPrint(Fat16_Data fat16, FILE* fd, unsigned int addr, int depth, ch
             unsigned int cluster_addr = (cluster - 2) * fat16.sectors_per_cluster * fat16.sector_size;
             unsigned int dir_addr = cluster_addr + (fat16.reserved_sectors * fat16.sector_size) + 
                 (fat16.num_fats * fat16.sectors_per_fat * fat16.sector_size) + (fat16.root_entries * FAT16_DIR_ENTRY_SIZE);
-            search(fat16, fd, dir_addr, depth + 1);
+            searchAndPrint(fat16, fd, dir_addr, depth + 1, filename);
         } 
         else {
             if (strcmp((char*)file, filename) == 0) {
@@ -213,20 +213,18 @@ void searchAndPrint(Fat16_Data fat16, FILE* fd, unsigned int addr, int depth, ch
                 unsigned int file_addr = cluster_addr + (fat16.reserved_sectors * fat16.sector_size) + 
                     (fat16.num_fats * fat16.sectors_per_fat * fat16.sector_size) + (fat16.root_entries * FAT16_DIR_ENTRY_SIZE);
 
-                // Move the file pointer to the beginning of the file data
-                fseek(fd, file_addr, SEEK_SET);
-                              
-                // Calculate the size of the file
+                // read file size
                 unsigned int file_size;
-                fread(&file_size, sizeof(unsigned int), 1, fd);
-                printf("File size: %d\n", file_size);   
+                fseek(fd, addr + (i * FAT16_DIR_ENTRY_SIZE) + 28, SEEK_SET); // +28 offset to reach the location where the file size is stored
+                fread(&file_size, sizeof(int), 1, fd);
+                printf("\nFile size: %d\n\n", file_size);
 
-                // Read file data
+                // read file data
                 unsigned char* file_data = malloc(file_size);
+                fseek(fd, file_addr, SEEK_SET);
                 fread(file_data, sizeof(char), file_size, fd);
                 
-                printf("%s", file_data);
-                printf("\n");
+                printf("%s\n", file_data);
 
                 free(file_data);
                 free(file);
