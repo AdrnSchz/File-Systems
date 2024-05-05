@@ -3,7 +3,7 @@
 void checkFileSystem(char* path, int* result, Ext2_Data* ext2, Fat16_Data* fat16);
 void printInfo(char* path);
 void printTree(char* path);
-
+void catFile(char *path, char* filename);
 int main(int argc, char *argv[]) {
     if (argc < 3) {
         USAGE_ERROR(argv[0]);
@@ -61,7 +61,7 @@ void printTree(char* path) {
     checkFileSystem(path, &result, &ext2, &fat16);
 
     if (result == 2) {
-        ext2_print_tree(ext2, path);
+        //ext2_print_tree(ext2, path);
     } else if (result == 0) {
         fat16_print_tree(fat16, path);
     } else {

@@ -27,5 +27,6 @@ typedef struct {
 
 int fat16_read_data(char* path, Fat16_Data* fat16);
 void fat16_print_tree(Fat16_Data fat16, char* path);
+void fat16_cat_file(Fat16_Data fat16, char* path, char* filename);
 
 #endif

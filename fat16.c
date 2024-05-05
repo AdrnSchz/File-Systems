@@ -115,6 +115,7 @@ int checkName(unsigned char* name) {
     }
     return 0;
 }
+
 void search(Fat16_Data fat16, FILE* fd, unsigned int addr, int depth) {
     unsigned char *file = malloc(FAT16_NAME_SIZE + 1);
     for (int i = 0; i < fat16.root_entries; i++) {
@@ -144,12 +145,12 @@ void search(Fat16_Data fat16, FILE* fd, unsigned int addr, int depth) {
             search(fat16, fd, dir_addr, depth + 1);
         } 
         else {
-            
             printFat16TreeEntry((char*)file, depth);
         }
     }
     free(file);
 }
+
 void fat16_print_tree(Fat16_Data fat16, char* path) {
     FILE *fd = fopen(path, "rb");
 
@@ -165,3 +166,88 @@ void fat16_print_tree(Fat16_Data fat16, char* path) {
     fclose(fd);
 }
 
+
+// PHASE 3
+
+void searchAndPrint(Fat16_Data fat16, FILE* fd, unsigned int addr, int depth, char* filename) {
+    unsigned char *file = malloc(FAT16_NAME_SIZE + 1);
+    for (int i = 0; i < fat16.root_entries; i++) {
+        memset(file, 0, FAT16_NAME_SIZE + 1);
+        fseek(fd, addr + (i * FAT16_DIR_ENTRY_SIZE), SEEK_SET);
+        fread(file, sizeof(char), FAT16_NAME_SIZE, fd);
+        file[FAT16_NAME_SIZE] = '\0';
+        
+        if (file[0] == 0x00) {
+            free(file);
+            return;
+        }
+        if (checkName(file)) continue;
+        
+        file = prepareName(file);
+        if (isDirectory(fd, addr + (i * FAT16_DIR_ENTRY_SIZE))) {
+            if (strcmp((char*)file, ".") == 0 || strcmp((char*)file, "..") == 0) continue;
+            
+            //printFat16TreeEntry((char*)file, depth);
+            
+            unsigned short cluster;
+            fseek(fd, addr + (i * FAT16_DIR_ENTRY_SIZE) + FAT16_FIRST_CLUSTER_OFFSET, SEEK_SET);
+            fread(&cluster, sizeof(short), 1, fd);
+            unsigned int cluster_addr = (cluster - 2) * fat16.sectors_per_cluster * fat16.sector_size;
+            unsigned int dir_addr = cluster_addr + (fat16.reserved_sectors * fat16.sector_size) + 
+                (fat16.num_fats * fat16.sectors_per_fat * fat16.sector_size) + (fat16.root_entries * FAT16_DIR_ENTRY_SIZE);
+            search(fat16, fd, dir_addr, depth + 1);
+        } 
+        else {
+            if (strcmp((char*)file, filename) == 0) {
+                //printFat16TreeEntry((char*)file, depth);
+
+                // Read the cluster number of the file from the directory entry
+                unsigned short cluster;
+                fseek(fd, addr + (i * FAT16_DIR_ENTRY_SIZE) + FAT16_FIRST_CLUSTER_OFFSET, SEEK_SET);
+                fread(&cluster, sizeof(short), 1, fd);
+
+                // Calculate the address of the cluster
+                unsigned int cluster_addr = (cluster - 2) * fat16.sectors_per_cluster * fat16.sector_size;
+
+                // Calculate the address of the file data within the cluster
+                unsigned int file_addr = cluster_addr + (fat16.reserved_sectors * fat16.sector_size) + 
+                    (fat16.num_fats * fat16.sectors_per_fat * fat16.sector_size) + (fat16.root_entries * FAT16_DIR_ENTRY_SIZE);
+
+                // Move the file pointer to the beginning of the file data
+                fseek(fd, file_addr, SEEK_SET);
+                              
+                // Calculate the size of the file
+                unsigned int file_size;
+                fread(&file_size, sizeof(unsigned int), 1, fd);
+                printf("File size: %d\n", file_size);   
+
+                // Read file data
+                unsigned char* file_data = malloc(file_size);
+                fread(file_data, sizeof(char), file_size, fd);
+                
+                printf("%s", file_data);
+                printf("\n");
+
+                free(file_data);
+                free(file);
+                return;
+            }
+        }
+    }
+    free(file);
+}
+
+void fat16_cat_file(Fat16_Data fat16, char* path, char* filename) {
+    FILE *fd = fopen(path, "rb");
+
+    if (fd == NULL) {
+        printf("Failed to open file %s\n", path);
+        return;
+    }
+    
+    unsigned int root_dir = fat16.reserved_sectors + (fat16.num_fats * fat16.sectors_per_fat);
+    
+    searchAndPrint(fat16, fd, root_dir * fat16.sector_size, 0, filename);
+
+    fclose(fd);
+}
