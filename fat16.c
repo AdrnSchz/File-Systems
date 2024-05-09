@@ -184,6 +184,12 @@ void searchAndPrint(Fat16_Data fat16, FILE* fd, unsigned int addr, int depth, ch
         if (checkName(file)) continue;
         
         file = prepareName(file);
+
+        // Convert file name to lowercase
+        for (int i = 0; i < FAT16_NAME_SIZE + 1; i++) {
+            file[i] = tolower(file[i]);
+        }
+        
         if (isDirectory(fd, addr + (i * FAT16_DIR_ENTRY_SIZE))) {
             if (strcmp((char*)file, ".") == 0 || strcmp((char*)file, "..") == 0) continue;
             
@@ -206,24 +212,52 @@ void searchAndPrint(Fat16_Data fat16, FILE* fd, unsigned int addr, int depth, ch
                 fseek(fd, addr + (i * FAT16_DIR_ENTRY_SIZE) + FAT16_FIRST_CLUSTER_OFFSET, SEEK_SET);
                 fread(&cluster, sizeof(short), 1, fd);
 
-                // Calculate the address of the cluster
-                unsigned int cluster_addr = (cluster - 2) * fat16.sectors_per_cluster * fat16.sector_size;
-
-                // Calculate the address of the file data within the cluster
-                unsigned int file_addr = cluster_addr + (fat16.reserved_sectors * fat16.sector_size) + 
-                    (fat16.num_fats * fat16.sectors_per_fat * fat16.sector_size) + (fat16.root_entries * FAT16_DIR_ENTRY_SIZE);
-
-                // read file size
+                // Process file data spanning multiple clusters
                 unsigned int file_size;
                 fseek(fd, addr + (i * FAT16_DIR_ENTRY_SIZE) + 28, SEEK_SET); // +28 offset to reach the location where the file size is stored
                 fread(&file_size, sizeof(int), 1, fd);
                 printf("\nFile size: %d\n\n", file_size);
 
-                // read file data
-                unsigned char* file_data = malloc(file_size);
-                fseek(fd, file_addr, SEEK_SET);
-                fread(file_data, sizeof(char), file_size, fd);
-                
+                unsigned char* file_data = malloc(file_size + 1);
+                unsigned int file_offset = 0;
+
+                while (file_size > 0) {
+                    // Calculate the address of the cluster
+                    unsigned int cluster_addr = (cluster - 2) * fat16.sectors_per_cluster * fat16.sector_size;
+
+                    // Calculate the address of the file data within the cluster
+                    unsigned int file_addr = cluster_addr + (fat16.reserved_sectors * fat16.sector_size) + 
+                        (fat16.num_fats * fat16.sectors_per_fat * fat16.sector_size) + (fat16.root_entries * FAT16_DIR_ENTRY_SIZE);
+                    
+                    // Determine the maximum number of bytes to read from the current cluster
+                    unsigned int max_bytes_to_read = fat16.sectors_per_cluster * fat16.sector_size;
+                    unsigned int bytes_to_read;
+
+                    // If the remaining file size is smaller than the maximum bytes that can be read from a cluster,
+                    // set bytes_to_read to the remaining file size
+                    if (file_size < max_bytes_to_read) {
+                        bytes_to_read = file_size;
+                    } else {
+                        bytes_to_read = max_bytes_to_read;
+                    }
+
+                    // Read file data from the cluster
+                    fseek(fd, file_addr, SEEK_SET);
+                    fread(file_data + file_offset, sizeof(char), bytes_to_read, fd);
+
+                    // Update offsets and size
+                    file_offset += bytes_to_read;
+                    file_size -= bytes_to_read;
+
+                    // Get the next cluster number from FAT
+                    fseek(fd, fat16.reserved_sectors * fat16.sector_size + cluster * 2, SEEK_SET);
+                    fread(&cluster, sizeof(short), 1, fd);
+                }
+
+                // Ensure null-termination
+                file_data[file_offset] = '\0';
+
+                // Print or process the file data
                 printf("%s\n", file_data);
 
                 free(file_data);
