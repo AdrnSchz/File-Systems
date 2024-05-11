@@ -52,17 +52,16 @@ int fat16_read_data(char* path, Fat16_Data* fat16) {
 }
 
 void printFat16TreeEntry(char* name, int depth) {
-    if (depth > 0) {
-        printf("|");
-    }
+    printf("|");
+    
     for(int i = 0; i < depth; i++) {
-        printf("    ");
+        printf("    |");
     }
 
     for (int i = 0; i < FAT16_NAME_SIZE + 1; i++) {
         name[i] = tolower(name[i]);
     }
-    printf("|__ %s\n", name);
+    printf("__ %s\n", name);
 }
 
 int isDirectory(FILE* fd, unsigned int addr) {

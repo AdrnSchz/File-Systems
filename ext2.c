@@ -129,15 +129,14 @@ int readDirEntry(Ext2_Dir_Entry *entry, FILE* fd, int pos, unsigned int *size, u
     return 0;
 }
 
-void printExt2TreeEntry(char* name, int depth) {
-    if (depth > 0) {
-        printf("|");
-    }
+void printExt2TreeEntry(char* name, int depth) { 
+    printf("|");
+    
     for(int i = 0; i < depth; i++) {
-        printf("    ");
+        printf("    |");
     }
 
-    printf("|__ %s\n", name);
+    printf("__ %s\n", name);
 }
 
 void ext2_search(Ext2_Data ext2, FILE* fd, int inode, int depth) {
@@ -146,7 +145,7 @@ void ext2_search(Ext2_Data ext2, FILE* fd, int inode, int depth) {
     Ext2_Dir_Entry entry;
 
     for (int i = 0; i < EXT2_IBLOCK_NUM && size < table.size; i++) {
-        unsigned int dir_pos = table.blocks[0] * ext2.block.size;
+        unsigned int dir_pos = table.blocks[i] * ext2.block.size;
 
         for (int j = 0; j < EXT2_DIR_ENTRIES; j++) {
             if (readDirEntry(&entry, fd, dir_pos, &size, table.size) == -1) break;
