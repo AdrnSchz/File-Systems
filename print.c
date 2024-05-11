@@ -4,11 +4,11 @@ char* unix_time_to_normal(time_t unix_time) {
     struct tm *local_time;
     char* buffer;
 
-    buffer = malloc(21);
+    buffer = malloc(27);
     local_time = localtime(&unix_time);
-
-    strftime(buffer, 20, "%Y-%m-%d %H:%M:%S", local_time);
-    buffer[20] = '\0';
+    
+    strftime(buffer, 26, "%a %B %d %H:%M:%S %Y", local_time);
+    buffer[27] = '\0';
 
     return buffer;
 }

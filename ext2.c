@@ -1,6 +1,5 @@
 #include "ext2.h"
 
-
 int ext2_read_data(char* path, Ext2_Data* ext2) {
 
     FILE *fs = fopen(path, "rb");
@@ -106,28 +105,69 @@ Inode_Table readInodeTable(Ext2_Data ext2, FILE* fd, int inode) {
     return table;
 }
 
-void search(Ext2_Data ext2, FILE* fd, int inode, int depth) {
+int readDirEntry(Ext2_Dir_Entry *entry, FILE* fd, int pos, unsigned int *size, unsigned int max_size) {
+    unsigned int inode;
+    unsigned short rec_len;
+    char name_len;
+
+    fseek(fd, pos + *size, SEEK_SET);
+    fread(&inode, sizeof(int), 1, fd);
+    
+    if (inode == 0) return -1;
+    
+    fread(&rec_len, sizeof(short), 1, fd);
+
+    if (rec_len + *size > max_size) return -1;
+    
+    fread(&name_len, sizeof(char), 1, fd);
+    fseek(fd, pos + *size, SEEK_SET);
+    fread(entry, sizeof(Ext2_Dir_Entry) - EXT2_NAME_SIZE + name_len, 1, fd);
+    
+    entry->name[(int)name_len] = '\0';
+    *size += rec_len;
+    
+    return 0;
+}
+
+void printExt2TreeEntry(char* name, int depth) {
+    if (depth > 0) {
+        printf("|");
+    }
+    for(int i = 0; i < depth; i++) {
+        printf("    ");
+    }
+
+    printf("|__ %s\n", name);
+}
+
+void ext2_search(Ext2_Data ext2, FILE* fd, int inode, int depth) {
     Inode_Table table = readInodeTable(ext2 , fd, inode);
     unsigned int size = 0;
+    Ext2_Dir_Entry entry;
 
-    for (int i = 0; i < /*number of blocks*/ && size < table.size; i++) {
-        unsigned int pos_first_block = table.blocks[i] * ext2.block.size;
+    for (int i = 0; i < EXT2_IBLOCK_NUM && size < table.size; i++) {
+        unsigned int dir_pos = table.blocks[0] * ext2.block.size;
 
-        for (int j = 0; j < /*number of directory entries*/; j++) {
+        for (int j = 0; j < EXT2_DIR_ENTRIES; j++) {
+            if (readDirEntry(&entry, fd, dir_pos, &size, table.size) == -1) break;
             
+            if (entry.file_type == EXT2_FILE_TYPE) printExt2TreeEntry(entry.name, depth);
+
+            if (entry.file_type == EXT2_DIR_TYPE && strcmp(entry.name, ".") != 0 && strcmp(entry.name, "..") != 0) {
+                printExt2TreeEntry(entry.name, depth);
+                ext2_search(ext2, fd, entry.inode, depth + 1);
+            }
         }
     }
 }
 
-void ext2_print_tree(Ext2_Data* ext2, char* path) {
+void ext2_print_tree(Ext2_Data ext2, char* path) {
     FILE* fd = fopen(path, "rb");
     if (fd == NULL) {
         printf("Failed to open file %s\n", path);
         return;
     }
-    
-    
 
-    search(ext2, fd, table, EXT2_ROOT_INODE, 0);
+    ext2_search(ext2, fd, EXT2_ROOT_INODE, 0);
     fclose(fd);
 }

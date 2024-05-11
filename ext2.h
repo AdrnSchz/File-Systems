@@ -2,12 +2,18 @@
 #define _EXT2_H_
 
 #include <stdio.h>
+#include <string.h>
 #include <stdint.h>
 #include <time.h>
 #include <stdlib.h>
 
 #define EXT2_BOOT_BLOCK_OFFSET 1024
 #define EXT2_ROOT_INODE 2
+#define EXT2_NAME_SIZE 255
+#define EXT2_IBLOCK_NUM 12
+#define EXT2_DIR_ENTRIES 512
+#define EXT2_DIR_TYPE 2
+#define EXT2_FILE_TYPE 1
 
 // Superblock
 #define EXT2_IDENTIFIER_OFFSET 56
@@ -64,20 +70,20 @@ typedef struct {
     unsigned short mode;
     unsigned short uid;
     unsigned int size;
-    char trash[20]; // i_atime, i_ctime, i_mtime, i_dtime, i_gid, i_links_count
-    unsigned int i_blocks;
-    char trash2[8]; // i_flags, i_osd1
+    char trash[32]; // i_atime, i_ctime, i_mtime, i_dtime, i_gid, i_links_count, i_blocks, i_flags, i_osd1
     unsigned int blocks[15];
-    char trash3[28]; // i_generation, i_file_acl, i_dir_acl, i_faddr, i_osd2
+    char trash2[28]; // i_generation, i_file_acl, i_dir_acl, i_faddr, i_osd2
 } Inode_Table;
 
 typedef struct {
-    int inode;
-    int size;
-    char name[];
-} Ext2_Directory;
+    unsigned int inode;
+    unsigned short record_length;
+    char name_length;
+    char file_type;
+    char name[EXT2_NAME_SIZE];
+} Ext2_Dir_Entry;
 
 int ext2_read_data(char* path, Ext2_Data* ext2);
-void ext2_print_tree(Ext2_Data* ext2, char* path);
+void ext2_print_tree(Ext2_Data ext2, char* path);
 
 #endif
