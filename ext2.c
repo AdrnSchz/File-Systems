@@ -86,23 +86,23 @@ int ext2_read_data(char* path, Ext2_Data* ext2) {
     return 2;
 }
 
-Inode_Table readInodeTable(Ext2_Data ext2, FILE* fd, int inode) {
-    Inode_Table table;
+Inode readInode(Ext2_Data ext2, FILE* fd, int inode) {
+    Inode inode_data;
     
+    unsigned int block_group_num = (inode - 1) / ext2.inode.groups;
+    unsigned int index_inode = (inode - 1) % ext2.inode.groups;
+    unsigned int block_group_offset = ext2.block.groups * ext2.block.size * block_group_num;
+
     unsigned int inode_block;
-    fseek(fd, EXT2_BOOT_BLOCK_OFFSET + ext2.block.size + EXT2_FIRST_INODE_BLOCK_OFFSET , SEEK_SET);
+    fseek(fd, EXT2_BOOT_BLOCK_OFFSET + ext2.block.size + block_group_offset + EXT2_FIRST_INODE_BLOCK_OFFSET , SEEK_SET);
     fread(&inode_block, sizeof(int), 1, fd);
 
-    unsigned int block_group_num = (inode - 1) / ext2.inode.size;
-    unsigned int index_inode = (inode - 1) % ext2.inode.size;
-    unsigned int block_group_offset = ext2.block.groups * ext2.block.size * block_group_num;
-    
     unsigned int inode_offset = index_inode * ext2.inode.size + inode_block * ext2.block.size + block_group_offset;
 
     fseek(fd, inode_offset, SEEK_SET);
-    fread(&table, sizeof(Inode_Table), 1, fd);
+    fread(&inode_data, sizeof(Inode), 1, fd);
 
-    return table;
+    return inode_data;
 }
 
 int readDirEntry(Ext2_Dir_Entry *entry, FILE* fd, int pos, unsigned int *size, unsigned int max_size) {
@@ -140,20 +140,20 @@ void printExt2TreeEntry(char* name, int depth) {
 }
 
 void ext2_search(Ext2_Data ext2, FILE* fd, int inode, int depth) {
-    Inode_Table table = readInodeTable(ext2 , fd, inode);
+    Inode inode_data = readInode(ext2 , fd, inode);
     unsigned int size = 0;
     Ext2_Dir_Entry entry;
 
-    for (int i = 0; i < EXT2_IBLOCK_NUM && size < table.size; i++) {
-        unsigned int dir_pos = table.blocks[i] * ext2.block.size;
+    for (int i = 0; i < EXT2_IBLOCK_NUM && size < inode_data.size; i++) {
+        unsigned int dir_pos = inode_data.blocks[i] * ext2.block.size;
 
-        for (int j = 0; j < EXT2_DIR_ENTRIES; j++) {
-            if (readDirEntry(&entry, fd, dir_pos, &size, table.size) == -1) break;
+        for (int j = 0; j < EXT2_DIR_ENTRIES; j++) { // check num dir entries
+            if (readDirEntry(&entry, fd, dir_pos, &size, inode_data.size) == -1) continue;
             
             if (entry.file_type == EXT2_FILE_TYPE) printExt2TreeEntry(entry.name, depth);
-
-            if (entry.file_type == EXT2_DIR_TYPE && strcmp(entry.name, ".") != 0 && strcmp(entry.name, "..") != 0) {
+            if (entry.file_type == EXT2_DIR_TYPE && strcmp(entry.name, ".") != 0 && strcmp(entry.name, "..") != 0 && strcmp(entry.name, "lost+found") != 0) {
                 printExt2TreeEntry(entry.name, depth);
+                
                 ext2_search(ext2, fd, entry.inode, depth + 1);
             }
         }

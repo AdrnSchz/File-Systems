@@ -73,7 +73,7 @@ typedef struct {
     char trash[32]; // i_atime, i_ctime, i_mtime, i_dtime, i_gid, i_links_count, i_blocks, i_flags, i_osd1
     unsigned int blocks[15];
     char trash2[28]; // i_generation, i_file_acl, i_dir_acl, i_faddr, i_osd2
-} Inode_Table;
+} Inode;
 
 typedef struct {
     unsigned int inode;
