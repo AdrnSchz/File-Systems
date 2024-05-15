@@ -6,6 +6,7 @@
 #include <string.h>
 
 #define USAGE_ERROR(x) printf("Usage: %s --command <file system>\n", x)
+#define USAGE_ERROR_CAT(x) printf("Usage: %s --command <file system> <file name>\n", x)
 #define OPEN_FILE_ERROR(x) printf("Error: Could not open file %s\n", x)
 #define FILE_SYSTEM_ERROR(x) printf("Error: Filesystem %s not recognized\n", x)
 

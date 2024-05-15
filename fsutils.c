@@ -20,7 +20,8 @@ int main(int argc, char *argv[]) {
         char* filename = argv[3];
         catFile(path, filename);
     } else {
-        USAGE_ERROR(argv[0]);
+        if (strcmp(argv[1], "--cat") == 0) USAGE_ERROR_CAT(argv[0]);
+        else USAGE_ERROR(argv[0]);
         return 1;
     }
     return 0;
