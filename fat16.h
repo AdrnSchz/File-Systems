@@ -17,7 +17,6 @@ typedef struct {
     int sector_size;
     int sectors_per_cluster;
     int reserved_sectors;
-    
     int num_fats;
     int root_entries;
     int sectors_per_fat;

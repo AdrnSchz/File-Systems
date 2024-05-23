@@ -147,7 +147,7 @@ void ext2_search(Ext2_Data ext2, FILE* fd, int inode, int depth) {
     for (int i = 0; i < EXT2_IBLOCK_NUM && size < inode_data.size; i++) {
         unsigned int dir_pos = inode_data.blocks[i] * ext2.block.size;
 
-        for (int j = 0; j < EXT2_DIR_ENTRIES; j++) { // check num dir entries
+        for (int j = 0; j < EXT2_DIR_ENTRIES; j++) {
             if (readDirEntry(&entry, fd, dir_pos, &size, inode_data.size) == -1) continue;
             
             if (entry.file_type == EXT2_FILE_TYPE) printExt2TreeEntry(entry.name, depth);
