@@ -11,10 +11,11 @@ int ext2_read_data(char* path, Ext2_Data* ext2) {
     // ================================================================
     // TODO: CHECKEAR SI EL FILEES EXT2
     // ================================================================
-    int type;
+    int type = 0;
     fseek(fs, EXT2_BOOT_BLOCK_OFFSET + EXT2_IDENTIFIER_OFFSET, SEEK_SET);
     fread(&type, sizeof(char), 2, fs);
     if (type != 0xEF53) {
+        fclose(fs);
         return -1;
     }
 
@@ -82,6 +83,7 @@ int ext2_read_data(char* path, Ext2_Data* ext2) {
     fread(&ext2->last_written, sizeof(char), 4, fs);
 
     fclose(fs);
+    fs = NULL;
 
     return 2;
 }

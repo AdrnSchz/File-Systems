@@ -7,7 +7,7 @@ int fat16_read_data(char* path, Fat16_Data* fat16) {
         return 1;
     }
 
-    unsigned short clusters;
+    unsigned short clusters = 0;
     fseek(fs, 19, SEEK_SET);
     fread(&clusters, sizeof(short), 1, fs);
     if (clusters < 4086) {
@@ -58,7 +58,7 @@ void printFat16TreeEntry(char* name, int depth) {
         printf("    |");
     }
 
-    for (int i = 0; i < FAT16_NAME_SIZE + 1; i++) {
+    for (int i = 0; i < FAT16_NAME_SIZE + 1 && name[i] != '\0'; i++) {
         name[i] = tolower(name[i]);
     }
     printf("__ %s\n", name);
@@ -117,6 +117,7 @@ int checkName(unsigned char* name) {
 
 void fat16_search(Fat16_Data fat16, FILE* fd, unsigned int addr, int depth) {
     unsigned char *file = malloc(FAT16_NAME_SIZE + 1);
+    
     for (int i = 0; i < fat16.root_entries; i++) {
         memset(file, 0, FAT16_NAME_SIZE + 1);
         fseek(fd, addr + (i * FAT16_DIR_ENTRY_SIZE), SEEK_SET);

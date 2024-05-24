@@ -8,7 +8,7 @@ char* unix_time_to_normal(time_t unix_time) {
     local_time = localtime(&unix_time);
     
     strftime(buffer, 26, "%a %B %d %H:%M:%S %Y", local_time);
-    buffer[27] = '\0';
+    buffer[26] = '\0';
 
     return buffer;
 }
@@ -33,7 +33,8 @@ void printExt2Info(Ext2_Data ext2) {
     printf("\tGroups flags: %d\n", ext2.block.flags);
 
     printf("\nINFO VOLUME\n");
-    printf("\tVolume name: %s\n", ext2.volume_name);
+    if (strlen(ext2.volume_name) > 0) printf("\tVolume name: %s\n", ext2.volume_name);
+    else printf("\tVolume name:\n");
     
     char* buffer = unix_time_to_normal(ext2.last_check);
     printf("\tLast checked: %s\n", buffer);
